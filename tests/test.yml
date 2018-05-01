@@ -1,0 +1,16 @@
+---
+- hosts: all
+  tasks:
+    - name: Ensure that the DRP HTTP static files server is accessible
+      uri:
+        url: "http://{{ inventory_hostname }}:8091"
+    - name: Ensure that the DRP API server is accessible
+      uri:
+        url: "https://{{ inventory_hostname }}:8092"
+        validate_certs: no # remove when SSL is configurable
+    - block:
+      - name: DRP service status
+        shell: "systemctl status dr-provision.service"
+      - name: DRP service journal
+        shell: "journalctl --no-pager -xu dr-provision.service"
+      ignore_errors: yes

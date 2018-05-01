@@ -1,0 +1,37 @@
+language: python
+sudo: required
+dist: trusty
+cache:
+  directories:
+  - "$HOME/lxc"
+  pip: true
+matrix:
+  fast_finish: true
+env:
+- ANSIBLE_GIT_VERSION='devel' # 2.6.x development branch
+- ANSIBLE_VERSION='<2.6.0' # 2.5.x
+- ANSIBLE_VERSION='<2.5.0' # 2.4.x
+install:
+- if [ "$ANSIBLE_GIT_VERSION" ]; then pip install "https://github.com/ansible/ansible/archive/${ANSIBLE_GIT_VERSION}.tar.gz";
+  elif [ "$ANSIBLE_VERSION" ]; then pip install "ansible${ANSIBLE_VERSION}";
+  else pip install ansible; fi
+- ansible --version
+- ansible-galaxy install lae.travis-lxc
+- ansible-playbook tests/install.yml -i tests/inventory
+- git archive --format tar.gz HEAD > lae.dr-provision.tar.gz && ansible-galaxy install
+  lae.dr-provision.tar.gz,$(git rev-parse HEAD),lae.dr-provision && rm lae.dr-provision.tar.gz
+before_script: cd tests/
+script:
+- ansible-playbook -i inventory deploy.yml --syntax-check
+- ansible-playbook -i inventory -v deploy.yml
+- 'ANSIBLE_STDOUT_CALLBACK=debug unbuffer ansible-playbook -i inventory -vv
+  deploy.yml > idempotency.log 2>&1 || (e=$?; cat idempotency.log; exit $e)'
+- 'grep -A1 "PLAY RECAP" idempotency.log | grep -qP "changed=0 .*failed=0 .*" &&
+  (echo "Idempotence: PASS"; exit 0) || (echo "Idempotence: FAIL"; exit 1)'
+- ANSIBLE_STDOUT_CALLBACK=debug ansible-playbook -i inventory -v test.yml
+notifications:
+  webhooks: https://galaxy.ansible.com/api/v1/notifications/
+  irc:
+    on_success: change
+    channels:
+      secure: "D7G1WYuQz0lrOVTeI0d9OKQJqQcxKgU5CvJygHHnmAfle8/OkJkrMqYIJyd4xZZhffhN5Vko8VTAK2908JeJsXGvr1PWZwwFKS9979aaaoGPzSV4vroYYYQa7ordgmJklnGFkLE1RhoLT8BVQhalb+J3rhyvGr7tgaJ+cQSNExATrnew/m/lVo2MxjN0DE0j2JIvbqmkmK5W9npY8WaR9W2iqFH6/4BAz+7ltUqgnliKevdG8Dt6NWFgWVS1FLOuCqZV7JugTRIdc0n9k5ZFlcuaWDJo/TpHUmM6uq1IKcOlaV72fnrgWT43exhnLzMXrr8PNChHZdu52SrvH5klCbcCn/Bk9KUEcXz3e9Jr+/qqrLlcDabyX9l9+J/JER3w5VRFv2U7S8zNRZtzYcoXrIFyLm0w22o2Fol7bF0HKY6KBc5kgiLihgKTwDV+6DkgV6dThEc5jxtBlLR1T/amDhdbLyoo18HmSaSaVC2LGtw03QlYhSnuWUACNaINb6AHSU8um08oD0zzS3RbbqYx8kxGuVl/yqIIWwZXpxop4W20R+qi81aciTmSrKOZ0ZJcAM20rrLR/KxWjiC58R4BE9OKPq0sIYK/9Yim0yohUw5pfbhWYoBMBBdazWSF9xVUrJHBBHj8qm8uojb5z3pW+pg3k/jW0Ev7LWTk3wrpuRg="
