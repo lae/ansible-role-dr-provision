@@ -1,0 +1,7 @@
+---
+provision_packages:
+  - jq
+  - git
+  - unzip
+  - p7zip-full
+  - bsdtar
