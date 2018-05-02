@@ -1,20 +1,29 @@
 ---
-- name: install systemd unit file for dr-provision
-  copy:
-    src: "{{ provision_download_dir }}/assets/startup/dr-provision.service"
-    dest: "{{ systemd_root }}/dr-provision.service"
-    remote_src: yes
+- block:
+  - name: Install systemd unit file for DR Provision
+    template:
+      src: dr-provision.service
+      dest: /lib/systemd/system/dr-provision.service
+    register: __provision_systemd_unit_file
+    notify:
+      - restart dr-provision
 
-- name: update startup command
-  lineinfile:
-    dest: "{{ systemd_root }}/dr-provision.service"
-    regexp: '^ExecStart='
-    line: "ExecStart={{ provision_bin_dir }}/dr-provision{{ provision_options | provision_options }}"
-    state: present
+  - name: Reload systemd if DR Provision unit file has changed
+    systemd:
+      daemon_reload: yes
+    when: __provision_systemd_unit_file is changed
+  when: 'ansible_service_mgr == "systemd"'
 
-- name: start and enable dr-provision
-  systemd:
+- name: Install OpenRC init script for DR Provision
+  template:
+    src: dr-provision.openrc
+    dest: /etc/init.d/dr-provision
+  when: 'ansible_service_mgr == "openrc"'
+  notify:
+    - restart dr-provision
+
+- name: Start and enable DR Provision
+  service:
     name: dr-provision
     state: started
     enabled: yes
-    daemon_reload: yes

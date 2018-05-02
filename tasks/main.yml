@@ -14,7 +14,7 @@
   - name: DR Provision Installation
     include_tasks: install.yml
 
-  - name: Start dr-provision
+  - name: DR Provision Service Configuration
     include_tasks: service.yml
 
   - name: Setup dr-provision

@@ -1,0 +1,14 @@
+[Unit]
+Description=DigitalRebar Provision Integrated DHCP and File Provisioner
+Documentation=http://provision.readthedocs.io/en/latest/
+After=network.target
+
+[Service]
+ExecStart={{ provision_bin_directory }}/dr-provision{{ provision_options | provision_options }}
+LimitNOFILE=1048576
+LimitNPROC=1048576
+LimitCORE=infinity
+TasksMax=infinity
+
+[Install]
+WantedBy=multi-user.target

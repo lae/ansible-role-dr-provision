@@ -1,0 +1,10 @@
+#!/sbin/openrc-run
+command={{ provision_bin_directory }}/dr-provision
+command_args={{ provision_options | provision_options }}
+command_background=true
+pidfile=/var/run/${RC_SVCNAME}.pid
+name="DigitalRebar Provision Integrated DHCP and File Provisioner"
+
+depend() {
+    need net
+}

@@ -10,7 +10,7 @@ provision_archive_checksum_url: "{{ provision_archive_url | replace('.zip', '.sh
 
 provision_download_directory: "/opt/dr-provision/{{ provision_release_tag }}"
 provision_var_dir: /var/lib/dr-provision
-provision_bin_dir: /usr/local/bin
+provision_bin_directory: /usr/local/bin
 
 provision_user: root
 provision_group: root

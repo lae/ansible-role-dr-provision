@@ -10,7 +10,7 @@
 
 - name: remove dr-provision binaries
   file:
-    path: "{{ provision_bin_dir }}/{{ item }}"
+    path: "{{ provision_bin_directory }}/{{ item }}"
     state: absent
   with_items:
     - dr-provision
@@ -31,4 +31,3 @@
 - name: reload systemd
   systemd:
     daemon_reload: yes
-

@@ -8,3 +8,4 @@
       - profile: debian-stretch
       - profile: centos-7
       - profile: ubuntu-xenial
+      - profile: alpine-v3.7
