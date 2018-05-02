@@ -3,21 +3,21 @@
 systemd_root: /lib/systemd/system
 
 provision_clean: no
+
 provision_release_tag: v3.8.0
-provision_release_base_url: https://github.com/digitalrebar/provision/releases/download
-provision_content_release_tag: v1.8.0
-provision_content_release_base_url: https://github.com/digitalrebar/provision-content/releases/download
+provision_archive_url: "https://github.com/digitalrebar/provision/releases/download/{{ provision_release_tag }}/dr-provision.zip"
+provision_archive_checksum_url: "{{ provision_archive_url | replace('.zip', '.sha256') }}"
+
+provision_download_directory: "/opt/dr-provision/{{ provision_release_tag }}"
+provision_var_dir: /var/lib/dr-provision
+provision_bin_dir: /usr/local/bin
+
 provision_user: root
 provision_group: root
 provision_delete_default_user: yes
 provision_admin_user: admin
 provision_admin_password: password
 provision_token_ttl: 600
-provision_root_dir: /opt
-provision_content_dir: "{{ provision_root_dir }}/dr-provision-content-releases"
-provision_download_dir: "{{ provision_root_dir }}/dr-provision-releases"
-provision_var_dir: /var/lib/dr-provision
-provision_bin_dir: /usr/local/bin
 provision_content_bootenvs:
   - sledgehammer
   - discovery

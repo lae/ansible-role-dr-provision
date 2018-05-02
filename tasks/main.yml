@@ -8,10 +8,10 @@
     - "{{ ansible_os_family|lower }}.yml"
 
 - block:
-  - name: Package installation tasks
+  - name: DR Provision Dependencies Installation
     include_tasks: "install_packages_{{ ansible_pkg_mgr }}.yml"
 
-  - name: Install dr-provision
+  - name: DR Provision Installation
     include_tasks: install.yml
 
   - name: Start dr-provision

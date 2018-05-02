@@ -1,60 +1,36 @@
 ---
-- name: create dr-provision directories
+- name: Create download directory for DR Provision
   file:
-    path: "{{ item }}"
+    path: "{{ provision_download_directory }}"
     state: directory
     mode: 0755
-  with_items:
-  - "{{ provision_download_dir }}"
-  - "{{ provision_content_dir }}"
-  - "{{ provision_download_dir }}/{{ provision_release_tag }}"
-  - "{{ provision_content_dir }}/{{ provision_content_release_tag }}"
 
-- name: get dr-provision artifacts
+- name: Lookup DR Provision archive's checksum
+  uri:
+    url: "{{ provision_archive_checksum_url }}"
+    return_content: yes
+  register: __provision_checksum
+
+- name: Fetch DR Provision artifacts
   get_url:
-    url: "{{ provision_release_base_url }}/{{ provision_release_tag }}/{{ item }}"
-    dest: "{{ provision_download_dir }}//{{ provision_release_tag }}/{{ item }}"
-  with_items:
-    - dr-provision.zip
-    - dr-provision.sha256
+    url: "{{ provision_archive_url }}"
+    dest: "{{ provision_download_directory }}/dr-provision.zip"
+    checksum: "sha256:{{ __provision_checksum.content.split().0 }}"
 
-- name: get provison-content artifacts
-  get_url:
-    url: "{{ provision_content_release_base_url }}/{{ provision_content_release_tag }}/{{ item }}"
-    dest: "{{ provision_content_dir }}//{{ provision_content_release_tag }}/{{ item }}"
-  with_items:
-    - drp-community-content.yaml
-    - drp-community-content.sha256
-
-- name: verify dr-provision artifacts
-  command: sha256sum -c dr-provision.sha256
-  args:
-    chdir: "{{ provision_download_dir }}//{{ provision_release_tag }}"
-  register: verify_provision_results
-
-- name: verify provision content artifact
-  command: sha256sum -c drp-community-content.sha256
-  args:
-    chdir: "{{ provision_content_dir }}//{{ provision_content_release_tag }}"
-  register: verify_provision_content_results
-
-- name: deploy dr-provision artifacts
+- name: Extract DR Provision artifacts
   unarchive:
-    src: "{{ provision_download_dir }}/{{ provision_release_tag }}/dr-provision.zip"
-    dest: "{{ provision_download_dir }}"
+    src: "{{ provision_download_directory }}/dr-provision.zip"
+    dest: "{{ provision_download_directory }}"
     remote_src: yes
-  when: verify_provision_results.stdout | search("OK")
 
-- name: install dr-provision binaries
+- name: Install DR Provision binaries
   copy:
-    src: "{{ provision_download_dir }}/bin/linux/amd64/{{ item }}"
-    dest: "{{ provision_bin_dir }}/{{ item }}"
+    src: "{{ provision_download_directory }}/bin/linux/{{ provision_architecture_map[ansible_architecture] }}/{{ item }}"
+    dest: "/usr/local/bin/{{ item }}"
     mode: 0755
     remote_src: yes
   with_items:
     - dr-provision
     - drpcli
-  when: verify_provision_results.stdout | search("OK")
   notify:
     - restart dr-provision
-
