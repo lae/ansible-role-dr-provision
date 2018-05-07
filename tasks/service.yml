@@ -18,6 +18,7 @@
   template:
     src: dr-provision.openrc
     dest: /etc/init.d/dr-provision
+    mode: 0755
   when: 'ansible_service_mgr == "openrc"'
   notify:
     - restart dr-provision
