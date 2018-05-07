@@ -1,0 +1,12 @@
+---
+provision_packages:
+  - bash
+  - rsync
+  - tar
+  - zip
+  - ca-certificates
+  - jq
+  - git
+  - unzip
+  - p7zip
+  - libarchive-tools
